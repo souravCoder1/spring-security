@@ -2,6 +2,7 @@ package com.sourav.springsecurity.controller;
 
 import com.sourav.springsecurity.entity.User;
 import com.sourav.springsecurity.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,10 +13,10 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
+@RequiredArgsConstructor
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
     @PostMapping("/create")
     public ResponseEntity<User> createUser(@RequestBody User user) {
@@ -38,7 +39,9 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = userService.getUsers();
-        return new ResponseEntity<>(users, HttpStatus.OK);
+//        List<User> users = userService.getUsers();
+//        return new ResponseEntity<>(users, HttpStatus.OK);
+
+        return ResponseEntity.ok().body(userService.getUsers());
     }
 }
