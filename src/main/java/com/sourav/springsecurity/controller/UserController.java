@@ -20,13 +20,13 @@ public class UserController {
 
     @PostMapping("/create")
     public ResponseEntity<User> createUser(@RequestBody User user) {
-        User createdUser = userService.saveUser(user);
+        User createdUser = userService.addRoleToUser(user);
         return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
     }
 
     @PostMapping("/roles/add")
     public ResponseEntity<?> addRoleToUser(@RequestParam String email, @RequestParam String roleName) {
-        userService.addRoleToUser(email, roleName);
+        userService.addRoleToExistingUser(email, roleName);
         return ResponseEntity.ok().build();
     }
 
@@ -34,13 +34,13 @@ public class UserController {
     public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
         Optional<User> userOptional = userService.getUser(username);
         return userOptional.map(user -> new ResponseEntity<>(user, HttpStatus.OK))
-                           .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
-//        List<User> users = userService.getUsers();
-//        return new ResponseEntity<>(users, HttpStatus.OK);
+        //List<User> users = userService.getUsers();
+        //return new ResponseEntity<>(users, HttpStatus.OK);
 
         return ResponseEntity.ok().body(userService.getUsers());
     }

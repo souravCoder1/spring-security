@@ -35,7 +35,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public void addRoleToUser(String email, String roleName) {
+    public void addRoleToExistingUser(String email, String roleName) {
         log.info("Adding role '{}' to user with email '{}'", roleName, email);
         Optional<User> user = userRepo.findByEmail(email);
         Optional<Role> role = roleRepo.findByRoleName(roleName);
@@ -44,6 +44,10 @@ public class UserServiceImpl implements UserService{
             u.getRoles().add(r);
             log.info("Role '{}' added to user '{}'", r, u);
         }));
+    }
+    @Override
+    public User addRoleToUser(User user) {
+        return userRepo.save(user);
     }
 
     @Override

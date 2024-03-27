@@ -10,7 +10,8 @@ import java.util.Set;
 public interface UserService {
     User saveUser(User user);
     Role saveRole(Role role);
-    void addRoleToUser(String email, String roleName);
+    void addRoleToExistingUser(String email, String roleName);
+    User addRoleToUser(User user);
     Optional<User> getUser(String username);
     List<User> getUsers();
 }

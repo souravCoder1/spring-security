@@ -16,4 +16,8 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long roleId;
     private String roleName;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id") // Define the join column in the Role table
+    private User user;
 }
