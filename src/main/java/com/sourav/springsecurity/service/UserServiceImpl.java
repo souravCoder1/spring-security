@@ -7,23 +7,32 @@ import com.sourav.springsecurity.repo.UserRepo;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 @Slf4j
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService, UserDetailsService {
 
     private final UserRepo userRepo;
     private final RoleRepo roleRepo;
+    private BCryptPasswordEncoder passwordEncoder;
 
     @Override
     public User saveUser(User user) {
+        String password = user.getPassword();
+        user.setPassword(passwordEncoder.encode(password));
         log.info("Saving user: {}", user);
         return userRepo.save(user);
     }
@@ -66,4 +75,28 @@ public class UserServiceImpl implements UserService{
         log.info("Fetching all users");
         return roleRepo.findAll();
     }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Optional<User> userOptional = userRepo.findByEmail(email);
+        if (userOptional.isEmpty()) {
+            throw new UsernameNotFoundException(email + " is not present");
+        }
+        User user = userOptional.get();
+        List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
+
+        for (Role role : user.getRoles()) {
+            grantedAuthorities.add(new SimpleGrantedAuthority(role.getRoleName()));
+        }
+
+        List<GrantedAuthority> authorities = user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getRoleName()))
+                .collect(Collectors.toList());
+
+        return new org.springframework.security.core.userdetails.User(email,
+                user.getPassword(),
+                grantedAuthorities
+        );
+    }
+
 }
