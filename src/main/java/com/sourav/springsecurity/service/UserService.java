@@ -12,6 +12,7 @@ public interface UserService {
     Role saveRole(Role role);
     void addRoleToExistingUser(String email, String roleName);
     User addRoleToUser(User user);
-    Optional<User> getUser(String username);
+    Optional<User> getUser(String email);
     List<User> getUsers();
+    List<Role> getRoles();
 }

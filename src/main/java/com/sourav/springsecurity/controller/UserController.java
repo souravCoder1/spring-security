@@ -1,5 +1,6 @@
 package com.sourav.springsecurity.controller;
 
+import com.sourav.springsecurity.entity.Role;
 import com.sourav.springsecurity.entity.User;
 import com.sourav.springsecurity.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -18,9 +19,14 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping("/create")
+    @PostMapping("/create/user")
     public ResponseEntity<User> createUser(@RequestBody User user) {
         User createdUser = userService.addRoleToUser(user);
+        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+    }
+    @PostMapping("/create/role")
+    public ResponseEntity<Role> createUser(@RequestBody Role user) {
+        Role createdUser = userService.saveRole(user);
         return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
     }
 
@@ -30,18 +36,25 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/{username}")
-    public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
-        Optional<User> userOptional = userService.getUser(username);
+    @GetMapping("/{email}")
+    public ResponseEntity<User> getUserByUsername(@PathVariable String email) {
+        Optional<User> userOptional = userService.getUser(email);
         return userOptional.map(user -> new ResponseEntity<>(user, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<User>> getAllUsers() {
         //List<User> users = userService.getUsers();
         //return new ResponseEntity<>(users, HttpStatus.OK);
 
         return ResponseEntity.ok().body(userService.getUsers());
+    }
+    @GetMapping("/roles")
+    public ResponseEntity<List<Role>> getAllRoles() {
+        //List<User> users = userService.getUsers();
+        //return new ResponseEntity<>(users, HttpStatus.OK);
+
+        return ResponseEntity.ok().body(userService.getRoles());
     }
 }

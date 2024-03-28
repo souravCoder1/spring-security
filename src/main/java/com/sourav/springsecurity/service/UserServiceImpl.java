@@ -51,14 +51,19 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public Optional<User> getUser(String username) {
-        log.info("Fetching user by name: {}", username);
-        return userRepo.findByName(username);
+    public Optional<User> getUser(String email) {
+        log.info("Fetching user by name: {}", email);
+        return userRepo.findByEmail(email);
     }
 
     @Override
     public List<User> getUsers() {
         log.info("Fetching all users");
-        return userRepo.findAll();
+        return userRepo.findAllWithRoles();
+    }
+    @Override
+    public List<Role> getRoles() {
+        log.info("Fetching all users");
+        return roleRepo.findAll();
     }
 }
