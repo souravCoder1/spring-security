@@ -47,7 +47,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((requests) -> {
                     try {
                         requests
-                                .requestMatchers("/api/**", "api/users/create/user").permitAll()
+                                .requestMatchers("/h2-console/**", "api/users/create/user").permitAll()
                                 .anyRequest().authenticated()
                         .and()
                         .headers().frameOptions().disable() // Allow framing for H2 console
