@@ -2,13 +2,19 @@ package com.sourav.springsecurity.util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
+import javax.security.auth.kerberos.EncryptionKey;
+import java.security.PublicKey;
+import java.security.interfaces.DSAPublicKey;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class JWTUtil {
@@ -19,21 +25,23 @@ public class JWTUtil {
     // Example secret key (keep this secret!)
     static String secretKey = secret;
 
+    static SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes());
+
     // Generate the token
 
-    public String generateToken(String subject) {
+    public static String generateToken(String subject) {
         Map<String, Object> claims = new HashMap<>();
         return generateToken(claims, subject);
     }
 
-    private String generateToken(Map<String, Object> claims, String subject) {
+    private static String generateToken(Map<String, Object> claims, String subject) {
         String token = Jwts.builder()
                 .subject(subject)
-                .claim(claims)
-                .issuer("demo")
-                .issuedAt(LocalDateTime.now())
-                .expiration(LocalDateTime.now().plusMinutes(30))
-                .signWith(secretKey.getBytes())
+                .claims(claims)
+                .issuer("https://issuer.example.com")
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMinutes(2)))
+                .signWith(key)
                 .compact();
 
         System.out.println(token);
@@ -45,12 +53,17 @@ public class JWTUtil {
 
     // Method to get claims from JWT token
     public static Claims getClaimsFromToken(String token) {
-        return Jwts.parser().verifyWith().build().parse(token);
+        return (Claims) Jwts
+                .parser()
+                .requireIssuer("https://issuer.example.com")
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token);
     }
 
     // Method to get username from claims
-    public static String getUsernameFromClaims() {
-        return getClaimsFromToken(secretKey).getSubject();
+    public String getUsernameFromClaims(String token) {
+        return getClaimsFromToken(token).getSubject();
     }
 
 }
