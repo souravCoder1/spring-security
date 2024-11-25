@@ -5,16 +5,21 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
 @Component
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class SecurityFilter extends OncePerRequestFilter{
     private JWTUtil jwtUtil;
     private UserDetailsService userDetailsService;
@@ -34,14 +39,18 @@ public class SecurityFilter extends OncePerRequestFilter{
             // Your custom logic to validate the token and authenticate the user
             // For example, you can use a JWT library to parse and verify the token
             String usernameFromClaims = jwtUtil.getUsernameFromClaims(token);
-            if(null != usernameFromClaims && SecurityContextHolder.getContext().getAuthentication() == null) {
+            if (null != usernameFromClaims && SecurityContextHolder.getContext().getAuthentication() == null) {
                 // load from DB
+                UserDetails userDetails = userDetailsService.loadUserByUsername(usernameFromClaims);
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                usernameFromClaims,
+                                userDetails.getPassword(),
+                                userDetails.getAuthorities()
+                        );
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authentication);
             }
-
-            // If the token is valid, you may set the authentication in SecurityContextHolder
-            // For example, if using Spring Security:
-             Authentication authentication = yourCustomAuthenticationLogic(token);
-             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 
         // Continue the filter chain

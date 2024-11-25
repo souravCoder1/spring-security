@@ -1,5 +1,6 @@
 package com.sourav.springsecurity.config;
 
+import com.sourav.springsecurity.filter.SecurityFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.context.annotation.Bean;
@@ -9,12 +10,14 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.util.Collections;
 
@@ -27,6 +30,12 @@ public class SecurityConfig {
 
     @Autowired
     private UserDetailsService userDetailsService;
+
+    @Autowired
+    private InvalidUserAuthenticationEntryPoint authenticationEntryPoint;
+
+    @Autowired
+    private SecurityFilter securityFilter;
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
@@ -47,10 +56,16 @@ public class SecurityConfig {
                 .authorizeHttpRequests((requests) -> {
                     try {
                         requests
-                                .requestMatchers("/h2-console/**", "api/users/create/user").permitAll()
+                                .requestMatchers("/h2-console/**", "api/users/create/user", "api/users/login").permitAll()
                                 .anyRequest().authenticated()
                         .and()
-                        .headers().frameOptions().disable() // Allow framing for H2 console
+                                .exceptionHandling()
+                                .authenticationEntryPoint(authenticationEntryPoint)
+                                .and()
+                                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                                .and()
+                                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+                                .headers().frameOptions().disable() // Allow framing for H2 console
                         .frameOptions().sameOrigin(); // Allow framing of the console;
                     } catch (Exception e) {
                         throw new RuntimeException(e);

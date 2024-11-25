@@ -3,14 +3,11 @@ package com.sourav.springsecurity.util;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import javax.security.auth.kerberos.EncryptionKey;
-import java.security.PublicKey;
-import java.security.interfaces.DSAPublicKey;
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,12 +17,14 @@ import java.util.concurrent.TimeUnit;
 public class JWTUtil {
 
     @Value("${app.secret}")
-    private static String secret;
+    private String secret;
 
-    // Example secret key (keep this secret!)
-    static String secretKey = secret;
+    private static SecretKey key;
 
-    static SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes());
+    @PostConstruct
+    public void init() {
+        key = Keys.hmacShaKeyFor(secret.getBytes());
+    }
 
     // Generate the token
 
