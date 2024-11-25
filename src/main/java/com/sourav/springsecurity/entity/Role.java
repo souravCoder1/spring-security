@@ -17,7 +17,7 @@ public class Role {
     private Long roleId;
     private String roleName;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST) // save role with user
     @JoinColumn(name = "user_id", referencedColumnName = "userId") // Define the join column in the Role table
     private User user;
 }

@@ -19,7 +19,7 @@ public class User {
     private String email;
     private String password;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL // save user with role
      //,mappedBy = "user"  //not propagate to role entity
     )
     @JoinColumn(name = "user_id") // Define the join column in the Role table
